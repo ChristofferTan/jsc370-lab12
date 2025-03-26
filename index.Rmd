@@ -8,3 +8,76 @@ output:
 ---
 
 This is my JSC370 Final Project website.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+source("process_starbucks_data.R")
+```
+
+```{r, echo=FALSE, warning=FALSE}
+sb_nutr_long <- sb_nutr |>
+  unnest_tokens(word, Item, token="words") |>
+  filter(word %in% topwords$word) |>
+  pivot_longer(
+    cols = c(Calories, `Fat (g)`, `Carb. (g)`, `Fiber (g)`, `Protein (g)`),
+    names_to = "Nutrient", values_to = "Value")
+
+p1 <- plot_ly(data = sb_nutr_long,
+        x = ~word,
+        y = ~Value,
+        color = ~Nutrient,
+        type = 'box'
+  ) |>
+  layout(
+    title = "Nutrition values for the top 10 words items",
+    xaxis = list(title = 'Item Word'),
+    yaxis = list(title = 'Nutrition Value'),
+    hovermode = 'compare'
+  )
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+set_map_details <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('steelblue')
+)
+
+# Make sure both maps are on the same color scale
+shadeLimit <- 125
+
+# Create hover text
+sb_locs_state$hover <- with(sb_locs_state, paste("Number of Starbucks: ", n_stores, '<br>', "State: ", state.y, '<br>', "Population: ", population))
+
+# Create the map
+map1 <- plot_geo(sb_locs_state, locationmode = "USA-states") |>
+  add_trace(z = ~n_stores, text = ~hover, locations = ~state,
+            color = ~n_stores, colors = 'Purples') |>
+  layout(title = "Starbucks store by state", geo = set_map_details)
+# map1
+
+
+map2 <- plot_geo(sb_locs_state, locationmode = "USA-states") |>
+  add_trace(z = ~population, text = ~hover, locations = ~state,
+            color = ~population, colors = 'Purples') |>
+  layout(title = "Starbucks store by state", geo = set_map_details)
+# map2
+
+p2 <- subplot(map1, map2)
+```
+
+## Showcasing plots {.tabset}
+### Figure 1
+
+```{r, echo=FALSE, warning=FALSE}
+p1
+```
+
+### Figure 2
+
+```{r, echo=FALSE, warning=FALSE}
+p2
+```
+
+{-}
