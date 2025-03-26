@@ -1,0 +1,6 @@
+name: "my-website"
+navbar:
+  title: "Christoffer Tan"
+  left:
+    - text: "Home"
+      href: index.html
